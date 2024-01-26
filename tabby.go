@@ -134,13 +134,26 @@ func (t *Tabby) Run(rawArgs []string) error {
 					args[param.identify] = value
 					empty = false
 				}
+				delete(strArgs, alia)
 			}
 		}
+	}
 
+	if len(strArgs) > 0 {
+		return errors.New(
+			fmt.Sprintf(
+				"App '%s': unsupported parameters '%s'",
+				finalAppPath,
+				strings.Join(AddPrefix(MapKeys[string, string](strArgs), "-"), ",")),
+		)
+	}
+
+	//DefaultArgs
+	for _, param := range params {
 		if _, ok := args[param.identify]; !ok {
 			if param.defaultValue.value != nil {
 				args[param.identify] = param.defaultValue.value
-			} else {
+			} else if !empty {
 				return errors.New(
 					fmt.Sprintf(
 						"App '%s': required parameter '%s' not provided(%s)",
@@ -156,7 +169,6 @@ func (t *Tabby) Run(rawArgs []string) error {
 	if err != nil {
 		return errors.New("App '" + finalAppPath + "' error:" + err.Error())
 	}
-
 	return nil
 }
 

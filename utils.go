@@ -7,3 +7,11 @@ func AddPrefix(strs []string, prefix string) []string {
 	}
 	return result
 }
+
+func MapKeys[keyT string, valueT string](m map[keyT]valueT) []keyT {
+	var keys []keyT
+	for key := range m {
+		keys = append(keys, key)
+	}
+	return keys
+}
