@@ -8,13 +8,29 @@ import (
 	"strings"
 )
 
-type VarType int
+var (
+	Int = NewTransfer("int", func(s string) (any, error) {
+		return strconv.ParseInt(s, 10, 64)
+	})
 
-const (
-	STRING VarType = iota
-	INT
-	BOOL
+	String = NewTransfer("string", func(s string) (any, error) {
+		return s, nil
+	})
+
+	Bool = NewTransfer("int", func(s string) (any, error) {
+		if len(s) == 0 {
+			return true, nil
+		} else {
+			return false, errors.New("boolean requires no value")
+		}
+	})
 )
+
+type DefaultValue struct {
+	name     string
+	value    any
+	transfer func(string) (any, error)
+}
 
 func DefaultParser(rawArgs []string) (map[string]string, error) {
 	//RawArgs
@@ -100,54 +116,43 @@ func (t *Tabby) Run(rawArgs []string) error {
 	finalAppPath := strings.Join(appPath, "/")
 
 	//Args
+	empty := true
 	strArgs, err := t.parser(rawArgs)
 	if err != nil {
 		return err
 	}
 
-	params := app.ParamTypes()
+	params := app.Params()
 	args := map[string]any{}
-	for k, v := range strArgs {
-		if param, ok := params[k]; ok {
-			switch param.paramType {
-			case STRING:
-				args[param.identify] = v
-			case INT:
-				args[param.identify], err = strconv.ParseInt(v, 10, 64)
-				if err != nil {
-					return err
-				}
-			case BOOL:
-				if len(v) == 0 {
-					args[param.identify] = true
-				} else {
-					return errors.New(fmt.Sprintf("App '%s': argument '%s' is boolean.", finalAppPath, param.identify))
-				}
-			default:
-				return errors.New(fmt.Sprintf("unknown argument type id '%d'", param.paramType))
-			}
-		} else {
-			return errors.New(fmt.Sprintf("App '%s': argument '%s' not support", finalAppPath, k))
-		}
-	}
-	//------Default Args
+
 	for _, param := range params {
-		if _, ok := args[param.identify]; !ok {
-			if param.defaultValue != nil {
-				args[param.identify] = param.defaultValue
-			} else {
-				var alias []string
-				for alia, param1 := range params {
-					if param1.identify == param.identify {
-						alias = append(alias, "-"+alia)
-					}
+		for _, alia := range param.alias {
+			if v, ok := strArgs[alia]; ok {
+				if value, err1 := param.defaultValue.transfer(v); err1 != nil {
+					return errors.New(fmt.Sprintf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error()))
+				} else {
+					args[param.identify] = value
+					empty = false
 				}
-				return errors.New(fmt.Sprintf("App '%s': required parameter '%s' not provided(%s)", finalAppPath, param.identify, strings.Join(alias, ",")))
+			}
+		}
+
+		if _, ok := args[param.identify]; !ok {
+			if param.defaultValue.value != nil {
+				args[param.identify] = param.defaultValue.value
+			} else {
+				return errors.New(
+					fmt.Sprintf(
+						"App '%s': required parameter '%s' not provided(%s)",
+						finalAppPath, param.identify,
+						strings.Join(AddPrefix(param.alias, "-"), ",")),
+				)
 			}
 		}
 	}
+
 	//Run
-	err = app.Main(NewArguments(appPath, args))
+	err = app.Main(NewArguments(empty, appPath, args))
 	if err != nil {
 		return errors.New("App '" + finalAppPath + "' error:" + err.Error())
 	}
@@ -167,4 +172,18 @@ func NewTabby(name string, mainApp Application) *Tabby {
 	}
 
 	return t
+}
+
+func NewTransfer(name string, transfer func(string) (any, error)) func(any) DefaultValue {
+	if transfer != nil {
+		return func(a any) DefaultValue {
+			return DefaultValue{
+				name:     name,
+				value:    a,
+				transfer: transfer,
+			}
+		}
+	} else {
+		panic("transfer '" + name + "' is nil")
+	}
 }
