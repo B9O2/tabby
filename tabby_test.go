@@ -9,8 +9,8 @@ type TestApplication struct {
 	*BaseApplication
 }
 
-func (t TestApplication) Name() string {
-	return "Test Application"
+func (t TestApplication) Detail() (string, string) {
+	return "test", "Test App"
 }
 
 func (t TestApplication) Main(args Arguments) error {

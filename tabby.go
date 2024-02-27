@@ -92,10 +92,11 @@ func (t *Tabby) Run(rawArgs []string) error {
 	app := t.mainApp
 	var subApp Application
 	ok := false
+	name, _ := t.mainApp.Detail()
 	if err := app.Init(nil); err != nil {
-		return errors.New("error: '" + t.mainApp.Name() + "' cause:" + err.Error())
+		return errors.New("error: '" + name + "' cause:" + err.Error())
 	}
-	appPath := []string{t.mainApp.Name()}
+	appPath := []string{name}
 	for _, appName := range apps {
 		appPath = append(appPath, appName)
 		subApp, ok = app.SubApplication(appName)
@@ -105,7 +106,8 @@ func (t *Tabby) Run(rawArgs []string) error {
 			} else {
 				app = t.unknownApp
 				if err := app.Init(t.mainApp); err != nil {
-					return errors.New("error: '" + t.mainApp.Name() + "/" + app.Name() + "' cause:" + err.Error())
+					appName, _ := app.Detail()
+					return errors.New("error: '" + name + "/" + appName + "' cause:" + err.Error())
 				}
 				break
 			}

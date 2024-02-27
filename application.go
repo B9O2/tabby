@@ -54,10 +54,20 @@ func (ba *BaseApplication) Help(parts ...string) {
 	for _, part := range parts {
 		fmt.Println(part)
 	}
+
 	for _, param := range ba.params {
 		alias := AddPrefix(param.alias, "-")
 		fmt.Printf("   -%s | %s(%s)\n", param.identify, param.help, strings.Join(alias, ","))
 	}
+
+	if len(ba.apps) > 0 {
+		fmt.Println("Subcommands:")
+		for _, app := range ba.apps {
+			name, desc := app.Detail()
+			fmt.Printf("   %s | %s\n", name, desc)
+		}
+	}
+
 }
 
 // SetParam default设置为nil则必须提供
@@ -82,12 +92,16 @@ func (ba *BaseApplication) SubApplication(name string) (Application, bool) {
 	}
 }
 
+func (ba *BaseApplication) SubApplications() map[string]Application {
+	return ba.apps
+}
+
 func NewBaseApplication(apps []Application) *BaseApplication {
 	ba := &BaseApplication{
 		apps: make(map[string]Application),
 	}
 	for _, app := range apps {
-		appName := app.Name()
+		appName, _ := app.Detail()
 		if _, ok := ba.apps[appName]; ok {
 			panic("'" + appName + "' exists")
 		} else {
@@ -99,7 +113,7 @@ func NewBaseApplication(apps []Application) *BaseApplication {
 
 type Application interface {
 	Init(Application) error
-	Name() string
+	Detail() (string, string)
 	Help(...string)
 	Main(Arguments) error
 	SetParam(string, string, DefaultValue, ...string)
