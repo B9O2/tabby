@@ -1,6 +1,9 @@
 package tabby
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 type TestApplication struct {
 	*BaseApplication
@@ -10,8 +13,9 @@ func (t TestApplication) Name() string {
 	return "Test Application"
 }
 
-func (t TestApplication) Main() error {
-
+func (t TestApplication) Main(args Arguments) error {
+	fmt.Println("ok")
+	return nil
 }
 
 func NewTestApplication() *TestApplication {
@@ -20,7 +24,6 @@ func NewTestApplication() *TestApplication {
 	}
 }
 func TestTabby(t *testing.T) {
-
 	tb := NewTabby("test", NewTestApplication())
-	tb
+	tb.Run(nil)
 }

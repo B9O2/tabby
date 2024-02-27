@@ -101,9 +101,12 @@ func (t *Tabby) Run(rawArgs []string) error {
 		subApp, ok = app.SubApplication(appName)
 		if !ok {
 			if t.unknownApp == nil {
-				return errors.New(fmt.Sprintf("App '%s' not exists", strings.Join(appPath, "/")))
+				return fmt.Errorf("App '%s' not exists", strings.Join(appPath, "/"))
 			} else {
 				app = t.unknownApp
+				if err := app.Init(t.mainApp); err != nil {
+					return errors.New("error: '" + t.mainApp.Name() + "/" + app.Name() + "' cause:" + err.Error())
+				}
 				break
 			}
 		}
@@ -129,7 +132,7 @@ func (t *Tabby) Run(rawArgs []string) error {
 		for _, alia := range param.alias {
 			if v, ok := strArgs[alia]; ok {
 				if value, err1 := param.defaultValue.transfer(v); err1 != nil {
-					return errors.New(fmt.Sprintf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error()))
+					return fmt.Errorf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error())
 				} else {
 					args[param.identify] = value
 					empty = false
@@ -140,12 +143,10 @@ func (t *Tabby) Run(rawArgs []string) error {
 	}
 
 	if len(strArgs) > 0 {
-		return errors.New(
-			fmt.Sprintf(
-				"App '%s': unsupported parameters '%s'",
-				finalAppPath,
-				strings.Join(AddPrefix(MapKeys[string, string](strArgs), "-"), ",")),
-		)
+		return fmt.Errorf(
+			"App '%s': unsupported parameters '%s'",
+			finalAppPath,
+			strings.Join(AddPrefix(MapKeys[string, string](strArgs), "-"), ","))
 	}
 
 	//DefaultArgs
@@ -154,12 +155,10 @@ func (t *Tabby) Run(rawArgs []string) error {
 			if param.defaultValue.value != nil {
 				args[param.identify] = param.defaultValue.value
 			} else if !empty {
-				return errors.New(
-					fmt.Sprintf(
-						"App '%s': required parameter '%s' not provided(%s)",
-						finalAppPath, param.identify,
-						strings.Join(AddPrefix(param.alias, "-"), ",")),
-				)
+				return fmt.Errorf(
+					"App '%s': required parameter '%s' not provided(%s)",
+					finalAppPath, param.identify,
+					strings.Join(AddPrefix(param.alias, "-"), ","))
 			}
 		}
 	}

@@ -56,7 +56,7 @@ func (ba *BaseApplication) Help(parts ...string) {
 	}
 	for _, param := range ba.params {
 		alias := AddPrefix(param.alias, "-")
-		fmt.Printf("   -%s %s(%s)\n", param.identify, param.help, strings.Join(alias, ","))
+		fmt.Printf("   -%s | %s(%s)\n", param.identify, param.help, strings.Join(alias, ","))
 	}
 }
 
