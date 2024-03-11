@@ -3,8 +3,6 @@ package tabby
 import (
 	"fmt"
 	"strings"
-
-	"github.com/B9O2/canvas/containers"
 )
 
 type Parameter struct {
@@ -47,15 +45,16 @@ type Application interface {
 	Init(Application) error
 	Detail() (string, string)
 	Help(...string)
-	Main(Arguments) (containers.Container, error)
+	Main(Arguments) (*TabbyContainer, error)
 	SetParam(string, string, DefaultValue, ...string)
 	Params() []Parameter
 	SubApplication(string) (Application, bool)
 }
 
 type BaseApplication struct {
-	apps   map[string]Application
-	params []Parameter
+	apps          map[string]Application
+	params        []Parameter
+	width, height uint
 }
 
 func (ba *BaseApplication) Init(Application) error {
@@ -108,9 +107,11 @@ func (ba *BaseApplication) SubApplications() map[string]Application {
 	return ba.apps
 }
 
-func NewBaseApplication(apps []Application) *BaseApplication {
+func NewBaseApplication(width, height uint, apps []Application) *BaseApplication {
 	ba := &BaseApplication{
-		apps: make(map[string]Application),
+		apps:   make(map[string]Application),
+		width:  width,
+		height: height,
 	}
 	for _, app := range apps {
 		appName, _ := app.Detail()

@@ -13,14 +13,14 @@ func (t TestApplication) Detail() (string, string) {
 	return "test", "Test App"
 }
 
-func (t TestApplication) Main(args Arguments) error {
+func (t TestApplication) Main(args Arguments) (*TabbyContainer, error) {
 	fmt.Println("ok")
-	return nil
+	return nil, nil
 }
 
 func NewTestApplication() *TestApplication {
 	return &TestApplication{
-		NewBaseApplication(nil),
+		NewBaseApplication(0, 0, nil),
 	}
 }
 func TestTabby(t *testing.T) {

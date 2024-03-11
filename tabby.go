@@ -6,8 +6,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-
-	"github.com/B9O2/canvas/containers"
 )
 
 var (
@@ -74,7 +72,7 @@ func (t *Tabby) SetParser(parser func([]string) (map[string]string, error)) erro
 	}
 }
 
-func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
+func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 	if rawArgs == nil {
 		rawArgs = os.Args[1:]
 	}
@@ -96,7 +94,7 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 	ok := false
 	name, _ := t.mainApp.Detail()
 	if err := app.Init(nil); err != nil {
-		return containers.Nil, errors.New("error: '" + name + "' cause:" + err.Error())
+		return nil, errors.New("error: '" + name + "' cause:" + err.Error())
 	}
 	appPath := []string{name}
 	for _, appName := range apps {
@@ -104,18 +102,18 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 		subApp, ok = app.SubApplication(appName)
 		if !ok {
 			if t.unknownApp == nil {
-				return containers.Nil, fmt.Errorf("App '%s' not exists", strings.Join(appPath, "/"))
+				return nil, fmt.Errorf("App '%s' not exists", strings.Join(appPath, "/"))
 			} else {
 				app = t.unknownApp
 				if err := app.Init(t.mainApp); err != nil {
 					appName, _ := app.Detail()
-					return containers.Nil, errors.New("error: '" + name + "/" + appName + "' cause:" + err.Error())
+					return nil, errors.New("error: '" + name + "/" + appName + "' cause:" + err.Error())
 				}
 				break
 			}
 		}
 		if err := subApp.Init(app); err != nil {
-			return containers.Nil, errors.New("error: '" + strings.Join(appPath, "/") + "' cause:" + err.Error())
+			return nil, errors.New("error: '" + strings.Join(appPath, "/") + "' cause:" + err.Error())
 		}
 		app = subApp
 	}
@@ -126,7 +124,7 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 	empty := true
 	strArgs, err := t.parser(rawArgs)
 	if err != nil {
-		return containers.Nil, err
+		return nil, err
 	}
 
 	params := app.Params()
@@ -136,7 +134,7 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 		for _, alia := range param.alias {
 			if v, ok := strArgs[alia]; ok {
 				if value, err1 := param.defaultValue.transfer(v); err1 != nil {
-					return containers.Nil, fmt.Errorf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error())
+					return nil, fmt.Errorf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error())
 				} else {
 					args[param.identify] = value
 					empty = false
@@ -147,7 +145,7 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 	}
 
 	if len(strArgs) > 0 {
-		return containers.Nil, fmt.Errorf(
+		return nil, fmt.Errorf(
 			"App '%s': unsupported parameters '%s'",
 			finalAppPath,
 			strings.Join(AddPrefix(MapKeys[string, string](strArgs), "-"), ","))
@@ -159,7 +157,7 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 			if param.defaultValue.value != nil {
 				args[param.identify] = param.defaultValue.value
 			} else if !empty {
-				return containers.Nil, fmt.Errorf(
+				return nil, fmt.Errorf(
 					"App '%s': required parameter '%s' not provided(%s)",
 					finalAppPath, param.identify,
 					strings.Join(AddPrefix(param.alias, "-"), ","))
@@ -168,11 +166,11 @@ func (t *Tabby) Run(rawArgs []string) (containers.Container, error) {
 	}
 
 	//Run
-	container, err := app.Main(NewArguments(empty, appPath, args))
+	tc, err := app.Main(NewArguments(empty, appPath, args))
 	if err != nil {
-		err = errors.New("App '" + finalAppPath + "' error:" + err.Error())
+		return nil, errors.New("App '" + finalAppPath + "' error:" + err.Error())
 	}
-	return container, err
+	return tc, nil
 }
 
 func (t *Tabby) SetUnknownApp(app Application) {
