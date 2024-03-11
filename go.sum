@@ -2,3 +2,5 @@ github.com/B9O2/canvas v0.0.1 h1:H88iqvGOvOeS+Rpm7DK1yImrqdmFxpdnMloS6ufg/y0=
 github.com/B9O2/canvas v0.0.1/go.mod h1:GSMWTdkbZfQ5XB1kfu9R/jvaf/QQKSo2IJlz8bZfszs=
 github.com/B9O2/canvas v0.0.2 h1:chyEJ7R1Rx6AQFldgnAjyujmo8qZGNyw6HawMvtlwh8=
 github.com/B9O2/canvas v0.0.2/go.mod h1:GSMWTdkbZfQ5XB1kfu9R/jvaf/QQKSo2IJlz8bZfszs=
+github.com/B9O2/canvas v0.0.3 h1:y66IE61wSWSV1MULIo78bVrzvQwa2Gq991ZqKa5rnfo=
+github.com/B9O2/canvas v0.0.3/go.mod h1:GSMWTdkbZfQ5XB1kfu9R/jvaf/QQKSo2IJlz8bZfszs=
