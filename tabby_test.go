@@ -14,7 +14,7 @@ func (t TestApplication) Detail() (string, string) {
 }
 
 func (t TestApplication) Main(args Arguments) (*TabbyContainer, error) {
-	fmt.Println("ok")
+	fmt.Println(args.Get("aa").(int))
 	return nil, nil
 }
 
@@ -24,6 +24,11 @@ func NewTestApplication() *TestApplication {
 	}
 }
 func TestTabby(t *testing.T) {
-	tb := NewTabby("test", NewTestApplication())
-	tb.Run(nil)
+	ta := NewTestApplication()
+	ta.SetParam("aa", "", Int(10))
+	tb := NewTabby("test", ta)
+	_, err := tb.Run([]string{"-aa", "30"})
+	if err != nil {
+		fmt.Println(err)
+	}
 }

@@ -10,7 +10,11 @@ import (
 
 var (
 	Int = NewTransfer("int", func(s string) (any, error) {
-		return strconv.ParseInt(s, 10, 64)
+		if i, err := strconv.ParseInt(s, 10, 0); err != nil {
+			return 0, err
+		} else {
+			return int(i), nil
+		}
 	})
 
 	String = NewTransfer("string", func(s string) (any, error) {
@@ -76,14 +80,17 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 	if rawArgs == nil {
 		rawArgs = os.Args[1:]
 	}
+
 	//Apps
 	var apps []string
 	i := 0
 	for _, argv := range rawArgs {
-		if argv[0] == '-' {
+
+		if len(argv) > 0 && argv[0] == '-' {
 			break
+		} else {
+			apps = append(apps, argv)
 		}
-		apps = append(apps, argv)
 		i += 1
 	}
 	rawArgs = rawArgs[i:]
@@ -161,6 +168,8 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 					"App '%s': required parameter '%s' not provided(%s)",
 					finalAppPath, param.identify,
 					strings.Join(AddPrefix(param.alias, "-"), ","))
+			} else {
+				
 			}
 		}
 	}

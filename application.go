@@ -20,8 +20,10 @@ type Arguments struct {
 func (a *Arguments) Get(key string) any {
 	if v, ok := a.args[key]; ok {
 		return v
-	} else {
+	} else if !a.empty {
 		panic("argument '" + key + "' not registered")
+	} else {
+		panic("argument '" + key + "' is required,please handle empty arguments")
 	}
 }
 
