@@ -70,14 +70,14 @@ func (ba *BaseApplication) Help(parts ...string) {
 
 	for _, param := range ba.params {
 		alias := AddPrefix(param.alias, "-")
-		fmt.Printf("   -%s | %s(%s)\n", param.identify, param.help, strings.Join(alias, ","))
+		fmt.Printf("   -%s(%s) : %s(%s)\n", param.identify, param.defaultValue.String(), param.help, strings.Join(alias, ","))
 	}
 
 	if len(ba.apps) > 0 {
 		fmt.Println("Subcommands:")
 		for _, app := range ba.apps {
 			name, desc := app.Detail()
-			fmt.Printf("   %s | %s\n", name, desc)
+			fmt.Printf("   %s : %s\n", name, desc)
 		}
 	}
 

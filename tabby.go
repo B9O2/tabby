@@ -36,6 +36,10 @@ type DefaultValue struct {
 	transfer func(string) (any, error)
 }
 
+func (dv DefaultValue) String() string {
+	return fmt.Sprint(dv.value)
+}
+
 func DefaultParser(rawArgs []string) (map[string]string, error) {
 	//RawArgs
 	currentKey := ""
@@ -168,8 +172,6 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 					"App '%s': required parameter '%s' not provided(%s)",
 					finalAppPath, param.identify,
 					strings.Join(AddPrefix(param.alias, "-"), ","))
-			} else {
-				
 			}
 		}
 	}

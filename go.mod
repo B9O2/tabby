@@ -1,4 +1,4 @@
-module github.com/b9o2/tabby
+module github.com/B9O2/tabby
 
 go 1.21.6
 
