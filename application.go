@@ -67,10 +67,22 @@ func (ba *BaseApplication) Help(parts ...string) {
 	for _, part := range parts {
 		fmt.Println(part)
 	}
+	params := map[string]string{}
 
+	max := 0
 	for _, param := range ba.params {
 		alias := AddPrefix(param.alias, "-")
-		fmt.Printf("   -%s(%s) : %s(%s)\n", param.identify, param.defaultValue.String(), param.help, strings.Join(alias, ","))
+		key := fmt.Sprintf("   -%s (%s)", param.identify, param.defaultValue.String())
+		value := fmt.Sprintf("%s(%s)", param.help, strings.Join(alias, ","))
+		l := len(key)
+		if l > max {
+			max = l
+		}
+		params[key] = value
+	}
+
+	for k, v := range params {
+		fmt.Println(k + ":" + strings.Repeat(" ", max-len(k)+2) + v)
 	}
 
 	if len(ba.apps) > 0 {

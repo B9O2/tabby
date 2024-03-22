@@ -37,7 +37,14 @@ type DefaultValue struct {
 }
 
 func (dv DefaultValue) String() string {
-	return fmt.Sprint(dv.value)
+	switch v := dv.value.(type) {
+	case nil:
+		return "*"
+	case string:
+		return "\"" + v + "\""
+	default:
+		return fmt.Sprint(dv.value)
+	}
 }
 
 func DefaultParser(rawArgs []string) (map[string]string, error) {
