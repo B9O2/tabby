@@ -51,12 +51,14 @@ type Application interface {
 	SetParam(string, string, DefaultValue, ...string)
 	Params() []Parameter
 	SubApplication(string) (Application, bool)
+	IgnoreUnsupportedArgs() bool
 }
 
 type BaseApplication struct {
-	apps          map[string]Application
-	params        []Parameter
-	width, height uint
+	apps                  map[string]Application
+	params                []Parameter
+	width, height         uint
+	ignoreUnsupportedArgs bool
 }
 
 func (ba *BaseApplication) Init(Application) error {
@@ -121,11 +123,16 @@ func (ba *BaseApplication) SubApplications() map[string]Application {
 	return ba.apps
 }
 
-func NewBaseApplication(width, height uint, apps []Application) *BaseApplication {
+func (ba *BaseApplication) IgnoreUnsupportedArgs() bool {
+	return ba.ignoreUnsupportedArgs
+}
+
+func NewBaseApplication(ignoreUnsupportedArgs bool, width, height uint, apps []Application) *BaseApplication {
 	ba := &BaseApplication{
-		apps:   make(map[string]Application),
-		width:  width,
-		height: height,
+		apps:                  make(map[string]Application),
+		width:                 width,
+		height:                height,
+		ignoreUnsupportedArgs: ignoreUnsupportedArgs,
 	}
 	for _, app := range apps {
 		appName, _ := app.Detail()

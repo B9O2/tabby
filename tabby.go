@@ -96,7 +96,6 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 	var apps []string
 	i := 0
 	for _, argv := range rawArgs {
-
 		if len(argv) > 0 && argv[0] == '-' {
 			break
 		} else {
@@ -162,7 +161,7 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 		}
 	}
 
-	if len(strArgs) > 0 {
+	if len(strArgs) > 0 && !app.IgnoreUnsupportedArgs() {
 		return nil, fmt.Errorf(
 			"App '%s': unsupported parameters '%s'",
 			finalAppPath,
