@@ -138,14 +138,6 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 		}
 	}
 
-	if empty {
-		tc, err := app.EmptyMain()
-		if err != nil {
-			return nil, errors.New("App '" + finalAppPath + "' error:" + err.Error())
-		}
-		return tc, nil
-	}
-
 	if len(strArgs) > 0 && !app.IgnoreUnsupportedArgs() {
 		return nil, fmt.Errorf(
 			"application '%s': unsupported parameters '%s'",
@@ -163,6 +155,12 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 					"application '%s': required parameter '%s' not provided(%s)",
 					finalAppPath, param.identify,
 					strings.Join(AddPrefix(param.alias, "-"), ","))
+			} else {
+				tc, err := app.EmptyMain()
+				if err != nil {
+					return nil, errors.New("App '" + finalAppPath + "' error:" + err.Error())
+				}
+				return tc, nil
 			}
 		}
 	}
