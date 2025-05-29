@@ -4,30 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
-)
-
-var (
-	Int = NewTransfer("int", func(s string) (any, error) {
-		if i, err := strconv.ParseInt(s, 10, 0); err != nil {
-			return 0, err
-		} else {
-			return int(i), nil
-		}
-	})
-
-	String = NewTransfer("string", func(s string) (any, error) {
-		return s, nil
-	})
-
-	Bool = NewTransfer("int", func(s string) (any, error) {
-		if len(s) == 0 {
-			return true, nil
-		} else {
-			return false, errors.New("boolean requires no value")
-		}
-	})
 )
 
 type DefaultValue struct {
@@ -119,7 +96,7 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 		subApp, ok = app.SubApplication(appName)
 		if !ok {
 			if t.unknownApp == nil {
-				return nil, fmt.Errorf("App '%s' not exists", strings.Join(appPath, "/"))
+				return nil, fmt.Errorf("application '%s' not exists", strings.Join(appPath, "/"))
 			} else {
 				app = t.unknownApp
 				if err := app.Init(t.mainApp); err != nil {
@@ -151,7 +128,7 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 		for _, alia := range param.alias {
 			if v, ok := strArgs[alia]; ok {
 				if value, err1 := param.defaultValue.transfer(v); err1 != nil {
-					return nil, fmt.Errorf("App '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error())
+					return nil, fmt.Errorf("application '%s': argument '%s(%s)' :error: %s", finalAppPath, param.identify, param.defaultValue.name, err1.Error())
 				} else {
 					args[param.identify] = value
 					empty = false
@@ -161,11 +138,19 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 		}
 	}
 
+	if empty {
+		tc, err := app.EmptyMain()
+		if err != nil {
+			return nil, errors.New("App '" + finalAppPath + "' error:" + err.Error())
+		}
+		return tc, nil
+	}
+
 	if len(strArgs) > 0 && !app.IgnoreUnsupportedArgs() {
 		return nil, fmt.Errorf(
-			"App '%s': unsupported parameters '%s'",
+			"application '%s': unsupported parameters '%s'",
 			finalAppPath,
-			strings.Join(AddPrefix(MapKeys[string, string](strArgs), "-"), ","))
+			strings.Join(AddPrefix(MapKeys(strArgs), "-"), ","))
 	}
 
 	//DefaultArgs
@@ -175,7 +160,7 @@ func (t *Tabby) Run(rawArgs []string) (*TabbyContainer, error) {
 				args[param.identify] = param.defaultValue.value
 			} else if !empty {
 				return nil, fmt.Errorf(
-					"App '%s': required parameter '%s' not provided(%s)",
+					"application '%s': required parameter '%s' not provided(%s)",
 					finalAppPath, param.identify,
 					strings.Join(AddPrefix(param.alias, "-"), ","))
 			}

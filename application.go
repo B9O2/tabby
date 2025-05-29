@@ -48,6 +48,7 @@ type Application interface {
 	Detail() (string, string)
 	Help(...string)
 	Main(Arguments) (*TabbyContainer, error)
+	EmptyMain() (*TabbyContainer, error)
 	SetParam(string, string, DefaultValue, ...string)
 	Params() []Parameter
 	SubApplication(string) (Application, bool)
@@ -57,7 +58,6 @@ type Application interface {
 type BaseApplication struct {
 	apps                  map[string]Application
 	params                []Parameter
-	width, height         uint
 	ignoreUnsupportedArgs bool
 }
 
@@ -97,6 +97,11 @@ func (ba *BaseApplication) Help(parts ...string) {
 
 }
 
+func (ba *BaseApplication) EmptyMain() (*TabbyContainer, error) {
+	ba.Help("Usage:")
+	return nil, nil
+}
+
 // SetParam default设置为nil则必须提供
 func (ba *BaseApplication) SetParam(identify, help string, defaultValue DefaultValue, alias ...string) {
 	ba.params = append(ba.params, Parameter{
@@ -127,11 +132,9 @@ func (ba *BaseApplication) IgnoreUnsupportedArgs() bool {
 	return ba.ignoreUnsupportedArgs
 }
 
-func NewBaseApplication(ignoreUnsupportedArgs bool, width, height uint, apps []Application) *BaseApplication {
+func NewBaseApplication(ignoreUnsupportedArgs bool, apps []Application) *BaseApplication {
 	ba := &BaseApplication{
 		apps:                  make(map[string]Application),
-		width:                 width,
-		height:                height,
 		ignoreUnsupportedArgs: ignoreUnsupportedArgs,
 	}
 	for _, app := range apps {

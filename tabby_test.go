@@ -20,7 +20,7 @@ func (t TestApplication) Main(args Arguments) (*TabbyContainer, error) {
 
 func NewTestApplication() *TestApplication {
 	return &TestApplication{
-		NewBaseApplication(true, 0, 0, nil),
+		NewBaseApplication(true, nil),
 	}
 }
 func TestTabby(t *testing.T) {
